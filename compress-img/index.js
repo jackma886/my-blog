@@ -6,15 +6,22 @@ const sharp = require('sharp');
 // Define the server port
 const PORT = 3000;
 
+// Define the cache directory
+const CACHE_DIR = path.resolve('cache');
+
+// Ensure the cache directory exists
+if (!fs.existsSync(CACHE_DIR)) {
+  fs.mkdirSync(CACHE_DIR);
+}
+
 // Create the HTTP server
 const server = http.createServer(async (req, res) => {
-  // Extract the image path from the URL (e.g., /compressed-image/some-image-path)
+  // Extract the image path from the URL (e.g., /img/some-image-path)
   const urlParts = req.url.split('/');
-  
-  if (urlParts[1] === 'compressed-image' && urlParts[2]) {
-    const imagePath = decodeURIComponent(urlParts.slice(2).join('/')); // Decode the path
 
-    const fullImagePath = path.resolve(imagePath); // Resolve the full path for security
+  if (urlParts[1] === 'img' && urlParts[2]) {
+    const imagePath = decodeURIComponent(urlParts.slice(2).join('/')); // Decode the path
+    const fullImagePath = path.resolve('img' + path.sep + imagePath); // Resolve the full path for security
 
     try {
       // Check if the image file exists
@@ -24,11 +31,30 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      // Read and compress the image to WebP format
+      // Define the cached file path
+      const cacheFilePath = path.join(CACHE_DIR, `${path.basename(imagePath)}.webp`);
+
+      // Check if the image is already cached
+      if (fs.existsSync(cacheFilePath)) {
+        console.log('Serving cached image:', cacheFilePath);
+
+        // Serve the cached image
+        const cachedImage = fs.readFileSync(cacheFilePath);
+        res.writeHead(200, { 'Content-Type': 'image/webp' });
+        res.end(cachedImage);
+        return;
+      }
+
+      // If not cached, read and compress the image to WebP format
       const compressedImage = await sharp(fullImagePath)
         .resize({ width: 800 }) // Resize the image to a width of 800px (adjust as needed)
         .webp({ quality: 70 }) // Compress the image with 70% quality and convert to WebP
         .toBuffer();
+
+      // Save the compressed image to the cache
+      fs.writeFileSync(cacheFilePath, compressedImage);
+
+      console.log('Image compressed and cached:', cacheFilePath);
 
       // Send the compressed image to the client
       res.writeHead(200, { 'Content-Type': 'image/webp' });
@@ -48,5 +74,5 @@ const server = http.createServer(async (req, res) => {
 // Start the server
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Visit http://localhost:${PORT}/compressed-image/<image-path> to view the compressed image`);
+  console.log(`Visit http://localhost:${PORT}/img/<image-path> to view the compressed and cached image`);
 });

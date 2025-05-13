@@ -5,31 +5,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Myblog</title>
-    <link rel="icon" type="image/x-icon" href="asset/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="asset/favicon.ico" />
+    <link rel="stylesheet" href="asset/blog.css" />
+    <meta name="robots" content="noindex, nofollow" />
     <style>
         html,
         body {
             height: 100%;
         }
 
-        body {
-            margin: 0 auto;
-            padding: 0;
-            max-width: 500px;
-
-        }
 
         iframe {
             width: 100%;
             border: none;
             /* Remove iframe border */
         }
+
+        .btns {
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
-    <iframe src="content.html"></iframe>
-    <iframe src="content.html"></iframe>
+    <div class="iframes"></div>
 
     <script src="blog.js"></script>
 </body>
