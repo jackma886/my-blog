@@ -9,3 +9,11 @@ article img {
     margin: 10px auto;
     max-width: 400px;
 }
+
+h1 {
+    color: #333;
+}
+
+.date {
+    color: #888;
+}

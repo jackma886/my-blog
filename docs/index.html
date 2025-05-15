@@ -24,13 +24,33 @@
         .btns {
             text-align: center;
         }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        .pagination button.active {
+            font-weight: bold;
+            background-color: #ddd;
+        }
     </style>
 </head>
 
 <body>
     <div class="iframes"></div>
+    <div class="pagination" id="pagination"></div>
 
-    <script src="blog.js"></script>
+    <script src="asset/index.js"></script>
 </body>
 
 </html>

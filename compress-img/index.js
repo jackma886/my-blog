@@ -2,6 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const { promisify } = require('util');
+const convert = require('heic-convert');
 
 // Define the server port
 const PORT = 3000;
@@ -42,18 +44,32 @@ const server = http.createServer(async (req, res) => {
         const cachedImage = fs.readFileSync(cacheFilePath);
         res.writeHead(200, { 'Content-Type': 'image/webp' });
         res.end(cachedImage);
+
         return;
       }
 
-      // If not cached, read and compress the image to WebP format
-      const compressedImage = await sharp(fullImagePath)
-        .resize({ width: 800 }) // Resize the image to a width of 800px (adjust as needed)
-        .webp({ quality: 70 }) // Compress the image with 70% quality and convert to WebP
-        .toBuffer();
+      let compressedImage;
+      if (fullImagePath.toLowerCase().indexOf('.heic') != -1) {
+        const inputBuffer = await promisify(fs.readFile)(fullImagePath);
+        const outputBuffer = await convert({
+          buffer: inputBuffer, // the HEIC file buffer
+          format: 'JPEG',      // output format
+          quality: 1           // the jpeg compression quality, between 0 and 1
+        });
+        // Create a sharp instance from the buffer
+        compressedImage = await sharp(outputBuffer)
+          .resize({ width: 800 }) // Resize the image to a width of 800px
+          .webp({ quality: 70 })  // Convert to WebP format with 70% quality
+          .toBuffer();
+      } else {
+        compressedImage = await sharp(fullImagePath)
+          .resize({ width: 800 }) // Resize the image to a width of 800px (adjust as needed)
+          .webp({ quality: 70 }) // Compress the image with 70% quality and convert to WebP
+          .toBuffer();
+      }
 
       // Save the compressed image to the cache
       fs.writeFileSync(cacheFilePath, compressedImage);
-
       console.log('Image compressed and cached:', cacheFilePath);
 
       // Send the compressed image to the client
